@@ -1,25 +1,97 @@
 import sys
 
+import nltk
+nltk.download(['stopwords','punkt', 'wordnet', 'averaged_perceptron_tagger']) # download for lemmatization
+
+import numpy as np
+import pandas as pd
+import re
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from nltk.stem.porter import PorterStemmer
+
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import LinearSVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.pipeline import Pipeline,FeatureUnion
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.metrics import f1_score, precision_score, recall_score, \
+    classification_report, confusion_matrix
+from sklearn.model_selection import GridSearchCV
+from sklearn.svm import LinearSVC
+from sklearn.multiclass import OneVsRestClassifier
+
+import pickle
+import datetime
+
+from sqlalchemy import create_engine
 
 def load_data(database_filepath):
-    pass
 
+    engine = create_engine('sqlite:///DisasterResponseDatabase.db')
+
+    df = pd.read_sql_table('MessageClassification',con='sqlite:///DisasterResponseDatabase.db')
+    X = df.iloc[:,1] #tweeter message
+    Y = df.iloc[:,4:] #classification: aid_centers, aid_related, buildings, etc.
 
 def tokenize(text):
-    pass
+
+    text = text.lower() #makes text lower case
+    text = re.sub(r"[^a-zA-Z0-9]"," ",text) #removes non-alphabetic characters
+    words=word_tokenize(text) #splits into words
+
+    words = [w for w in words if w not in stopwords.words("english")]# Remove stop words    
+    words = [PorterStemmer().stem(w) for w in words] #apply stemming to words (eg. branching -> branch)
+    words = [WordNetLemmatizer().lemmatize(w, pos='v') for w in words]#apply lemmatizing to words (eg. was -> is)
+    
+    return words
 
 
 def build_model():
-    pass
 
+    pipeline = Pipeline([
+        ('vectorizer', CountVectorizer(tokenizer=tokenize)), #create the CountVectorizer object
+        ('tfidf', TfidfTransformer()), #create Tfidftransformer object    
+        ('clf', MultiOutputClassifier(OneVsRestClassifier(LinearSVC()))) #create the Classifier object
+    ])
+
+    #parameters identified from GridCV search
+    parameters = {   
+        'clf__estimator__estimator__C': 1,
+        'tfidf__use_idf': False,
+        'vectorizer__max_df': 0.8,
+        'vectorizer__ngram_range': (1, 1)
+    }
+
+    #create a grid searchCV for clarity of code
+    grid_cv = GridSearchCV(pipeline, param_grid=parameters, cv=5,verbose=3,n_jobs=-1)
+
+    return grid_cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+
+    Y_pred = model.predict(X_test)
+
+    Y_test=pd.DataFrame(data=Y_test,columns=Y.columns)     #Convert prediction numpy into dataframe
+    Y_pred=pd.DataFrame(data=Y_pred,columns=Y.columns)
+    
+    for column in Y_pred.columns:
+        print(column)
+        print(classification_report(Y_test[column], Y_pred[column]))
+        print('_____________________________________________________')
 
 
 def save_model(model, model_filepath):
     pass
 
+    pickle_out = open('data/model.pkl','wb')
+    pickle.dump(pipeline3, pickle_out)
 
 def main():
     if len(sys.argv) == 3:
