@@ -46,13 +46,14 @@ def load_data(database_filepath):
     - df: dataframe
     '''
 
-    engine = create_engine('sqlite:///DisasterResponseDatabase.db')
+    engine = create_engine('sqlite:///' + database_filepath)
 
-    df = pd.read_sql_table('MessageClassification',con='sqlite:///DisasterResponseDatabase.db')
+    df = pd.read_sql_table('MessageClassification',engine)
     X = df.iloc[:,1] 
     Y = df.iloc[:,4:] 
+    category_names=list(df.columns[4:])
 
-    return df,X,Y
+    return X,Y,category_names
 
 def tokenize(text):
     '''
@@ -122,8 +123,8 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
     Y_pred = model.predict(X_test)
 
-    Y_test=pd.DataFrame(data=Y_test,columns=Y.columns)     #Convert prediction numpy into dataframe
-    Y_pred=pd.DataFrame(data=Y_pred,columns=Y.columns)
+    Y_test=pd.DataFrame(data=Y_test,columns=category_names) #Convert prediction numpy into dataframe
+    Y_pred=pd.DataFrame(data=Y_pred,columns=category_names)
     
     for column in Y_pred.columns:
         print(column)
