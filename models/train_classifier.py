@@ -34,13 +34,36 @@ from sqlalchemy import create_engine
 
 def load_data(database_filepath):
 
+    '''
+    loads the database with messages
+
+    Input:
+    database_filepath: from user
+
+    Output:
+    - X: tweeter message
+    - Y: classification eg. aid_centers, aid_related, buildings, etc.
+    - df: dataframe
+    '''
+
     engine = create_engine('sqlite:///DisasterResponseDatabase.db')
 
     df = pd.read_sql_table('MessageClassification',con='sqlite:///DisasterResponseDatabase.db')
-    X = df.iloc[:,1] #tweeter message
-    Y = df.iloc[:,4:] #classification: aid_centers, aid_related, buildings, etc.
+    X = df.iloc[:,1] 
+    Y = df.iloc[:,4:] 
+
+    return df,X,Y
 
 def tokenize(text):
+    '''
+    converts tweet messages into simplified lemmitized words.
+
+    Input: 
+    text: input single message as a string
+
+    Output:
+    words: the sentence converted into separate words list
+    '''
 
     text = text.lower() #makes text lower case
     text = re.sub(r"[^a-zA-Z0-9]"," ",text) #removes non-alphabetic characters
@@ -54,6 +77,14 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    Create a LinearSVC model using MultiOutputClassifier.
+
+    The parameters and model were selected based on GridSearchCV iterations.
+
+    Output:
+    returns LinearSVC model.
+    '''
 
     pipeline = Pipeline([
         ('vectorizer', CountVectorizer(tokenizer=tokenize)), #create the CountVectorizer object
@@ -76,6 +107,19 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
 
+    '''
+    Prints out statistical analysis (precision, recall and accuracy).
+
+    Input:
+    - model: NLP model
+    - X_test: 20% of messages in dataset (validation) 
+    - Y_test: 20% of classifications in dataset (validation)
+    - category_names: classification titles
+
+    Output:
+    prints the statistical analysis
+    '''
+
     Y_pred = model.predict(X_test)
 
     Y_test=pd.DataFrame(data=Y_test,columns=Y.columns)     #Convert prediction numpy into dataframe
@@ -91,7 +135,7 @@ def save_model(model, model_filepath):
     pass
 
     pickle_out = open('data/model.pkl','wb')
-    pickle.dump(pipeline3, pickle_out)
+    pickle.dump(model, pickle_out)
 
 def main():
     if len(sys.argv) == 3:
