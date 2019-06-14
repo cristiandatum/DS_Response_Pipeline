@@ -79,8 +79,8 @@ def save_data(df, database_filename):
     Ouput:
     Database saved in filepath name
     '''
-
-    engine = create_engine('sqlite:///DisasterResponse.db')
+    #create engine: engine
+    engine = create_engine('sqlite:///'+database_filename)
     df.to_sql('MessageClassification', engine, index=False)
 
   

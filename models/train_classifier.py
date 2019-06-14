@@ -46,6 +46,7 @@ def load_data(database_filepath):
     - df: dataframe
     '''
 
+    #create engine: engine
     engine = create_engine('sqlite:///' + database_filepath)
 
     df = pd.read_sql_table('MessageClassification',engine)
@@ -95,9 +96,9 @@ def build_model():
 
     #parameters identified from GridCV search
     parameters = {   
-        'clf__estimator__estimator__C': 1,
-        'tfidf__use_idf': False,
-        'vectorizer__max_df': 0.8,
+        'clf__estimator__estimator__C': [1],
+        'tfidf__use_idf': [False],
+        'vectorizer__max_df': [0.8],
         'vectorizer__ngram_range': (1, 1)
     }
 
@@ -133,9 +134,21 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    pass
 
-    pickle_out = open('data/model.pkl','wb')
+    '''
+    Opens saved model contained in a pickle file. 
+
+    Input:
+    - model: NLP model saved as .pkl file 
+    - model_filepath: location where .pkl file is found
+    
+    Output:
+    returns model for use.
+    '''
+
+    #Reference: https://machinelearningmastery.com/save-load-machine-learning-models-python-scikit-learn/
+
+    pickle_out = open(model_filepath,'wb')
     pickle.dump(model, pickle_out)
 
 def main():
