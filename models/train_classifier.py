@@ -29,6 +29,8 @@ from sklearn.multiclass import OneVsRestClassifier
 
 import pickle
 import datetime
+import warnings
+warnings.filterwarnings('ignore')
 
 from sqlalchemy import create_engine
 
@@ -49,7 +51,7 @@ def load_data(database_filepath):
     #create engine: engine
     engine = create_engine('sqlite:///' + database_filepath)
 
-    df = pd.read_sql_table('MessageClassification',engine)
+    df = pd.read_sql_table('MessageClassification',con=engine)    
     X = df.iloc[:,1] 
     Y = df.iloc[:,4:] 
     category_names=list(df.columns[4:])
@@ -94,17 +96,18 @@ def build_model():
         ('clf', MultiOutputClassifier(OneVsRestClassifier(LinearSVC()))) #create the Classifier object
     ])
 
-    #parameters identified from GridCV search
+    #parameters identified from GridCV search. To save processing time, only the optimium parameters are used. 
     parameters = {   
         'clf__estimator__estimator__C': [1],
         'tfidf__use_idf': [False],
         'vectorizer__max_df': [0.8],
-        'vectorizer__ngram_range': (1, 1)
+        'vectorizer__ngram_range':(1, 1)
     }
 
+    parameters={}
     #create a grid searchCV for clarity of code
-    grid_cv = GridSearchCV(pipeline, param_grid=parameters, cv=5,verbose=3,n_jobs=-1)
-
+    
+    grid_cv = GridSearchCV(pipeline, param_grid=parameters, cv=5,verbose=3)
     return grid_cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -114,8 +117,8 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
     Input:
     - model: NLP model
-    - X_test: 20% of messages in dataset (validation) 
-    - Y_test: 20% of classifications in dataset (validation)
+    - X_test: 20% of messages in dataset 
+    - Y_test: 20% of classifications in dataset
     - category_names: classification titles
 
     Output:
@@ -141,7 +144,7 @@ def save_model(model, model_filepath):
     Input:
     - model: NLP model saved as .pkl file 
     - model_filepath: location where .pkl file is found
-    
+
     Output:
     returns model for use.
     '''
