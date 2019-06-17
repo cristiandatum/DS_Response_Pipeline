@@ -1,6 +1,21 @@
 # DS_Response_Pipeline
 ### Disaster Reponse Pipeline for Udacity Data Science nanodegree
 
+### Installation: 
+
+
+Clone the GitHub repository and use Anaconda distribution of Python 3.
+<code:
+$ git clone https://..... .git
+The code can be viewed and modified with Jupyter Notebooks.
+
+This will require pip install:
+
+sqlalchemy
+pickle
+nltk
+
+
 ### Instructions:
 
     Run the following commands in the project's root directory to set up your database and model.
