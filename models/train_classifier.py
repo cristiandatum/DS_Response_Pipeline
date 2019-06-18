@@ -73,9 +73,11 @@ def tokenize(text):
     text = re.sub(r"[^a-zA-Z0-9]"," ",text) #removes non-alphabetic characters
     words=word_tokenize(text) #splits into words
 
-    words = [w for w in words if w not in stopwords.words("english")]# Remove stop words    
-    words = [PorterStemmer().stem(w) for w in words] #apply stemming to words (eg. branching -> branch)
-    words = [WordNetLemmatizer().lemmatize(w, pos='v') for w in words]#apply lemmatizing to words (eg. was -> is)
+    # Remove stop words    
+    words = [w for w in words if w not in stopwords.words("english")]
+
+    #apply lemmatizing to words (eg. was -> is)    
+    words = [WordNetLemmatizer().lemmatize(w, pos='v') for w in words]
     
     return words
 
