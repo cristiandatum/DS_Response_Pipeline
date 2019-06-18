@@ -26,11 +26,12 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('MessageClassification', engine)
+
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -61,6 +62,49 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Heatmap(
+                    x=category_names,
+                    y=category_names[::-1],
+                    z=category_map
+                )    
+            ],
+
+            'layout': {
+                'title': 'Heatmap of Categories'
+            }
+        },
+
+        {
+            'data': [
+                Histogram(
+                    y=length_direct,
+                    name='Direct',
+                    opacity=0.5
+                ),
+                Histogram(
+                    y=length_social,
+                    name='Social',
+                    opacity=0.5
+                ),
+                Histogram(
+                    y=length_news,
+                    name='News',
+                    opacity=0.5
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Text Length',
+                'yaxis':{
+                    'title':'Count'
+                },
+                'xaxis': {
+                    'title':'Text Length'
                 }
             }
         }
