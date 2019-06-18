@@ -7,7 +7,12 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
+
+import plotly.plotly as py
+import plotly.graph_objs as go
+
 from plotly.graph_objs import Bar
+
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -46,6 +51,10 @@ def index():
     # extract categories
     categories_counts=df.iloc[:,4:].sum()
     category_names = list(df.columns[4:])
+    category_maps=df.iloc[:,4:].corr().values
+    
+    data_map = [go.Heatmap( z=df.iloc[:,4:].values.tolist(), colorscale='Viridis')]
+
 
     # create visuals
     graphs = [
@@ -86,21 +95,21 @@ def index():
             }
         },
 
-
-
-        { #Bar plot showing categories names and counts
-            'data': [
-                Heatmap(
-                    x=category_names,
-                    y=category_names[::-1],
-                    z=category_map
-                )    
-            ],
-
-            'layout': {
-                'title': 'Heatmap of Categories'
-            }
+        { #Heatmap showing counts
+            py.iplot(data_map, filename='pandas-heatmap')
         },
+#        { #Heatmap showing counts
+#            'data': [
+#                go.Heatmap(
+#                    x=category_names,
+#                    y=category_names[::-1],
+#                    z=category_map
+#                )    
+#            ],
+#            'layout': {
+#                'title': 'Heatmap of Categories'
+#            }
+#        },
     ]
     
     # encode plotly graphs in JSON
