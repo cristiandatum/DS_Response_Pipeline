@@ -1,7 +1,7 @@
 import json
 import plotly
 import pandas as pd
-
+import numpy as np
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
@@ -40,14 +40,16 @@ model = joblib.load("../models/classifier.pkl")
 def index():
     
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # extract categories
+    categories_counts=df.iloc[:,4:].sum()
+    category_names = list(df.columns[4:])
+
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
-        {
+        { #Bar plot showing genre names and counts
             'data': [
                 Bar(
                     x=genre_names,
@@ -65,7 +67,28 @@ def index():
                 }
             }
         },
-        {
+        { #Bar plot showing categories names and counts
+            'data': [
+                Bar(
+                    x=categories_counts,
+                    y=category_names
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Genres',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre"
+                }
+            }
+        },
+
+
+
+        { #Bar plot showing categories names and counts
             'data': [
                 Heatmap(
                     x=category_names,
@@ -78,36 +101,6 @@ def index():
                 'title': 'Heatmap of Categories'
             }
         },
-
-        {
-            'data': [
-                Histogram(
-                    y=length_direct,
-                    name='Direct',
-                    opacity=0.5
-                ),
-                Histogram(
-                    y=length_social,
-                    name='Social',
-                    opacity=0.5
-                ),
-                Histogram(
-                    y=length_news,
-                    name='News',
-                    opacity=0.5
-                )
-            ],
-
-            'layout': {
-                'title': 'Distribution of Text Length',
-                'yaxis':{
-                    'title':'Count'
-                },
-                'xaxis': {
-                    'title':'Text Length'
-                }
-            }
-        }
     ]
     
     # encode plotly graphs in JSON
