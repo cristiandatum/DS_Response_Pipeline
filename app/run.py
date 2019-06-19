@@ -11,7 +11,7 @@ from flask import render_template, request, jsonify
 import plotly.plotly as py
 import plotly.graph_objs as go
 
-from plotly.graph_objs import Bar
+from plotly.graph_objs import *
 
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
@@ -79,8 +79,8 @@ def index():
         { #Bar plot showing categories names and counts
             'data': [
                 Bar(
-                    x=categories_counts,
-                    y=category_names
+                    x=categories_names,
+                    y=category_counts
                 )
             ],
 
@@ -95,9 +95,9 @@ def index():
             }
         },
 
-        { #Heatmap showing counts
-            py.iplot(data_map, filename='pandas-heatmap')
-        },
+#        { #Heatmap showing counts
+#            py.iplot(data_map, filename='pandas-heatmap')
+#        },
 #        { #Heatmap showing counts
 #            'data': [
 #                go.Heatmap(
